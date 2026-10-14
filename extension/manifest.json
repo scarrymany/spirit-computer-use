@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "SPIRIT Browser",
+  "version": "0.2.0",
+  "description": "Connect your existing Chrome tabs to the local SPIRIT Computer Use engine.",
+  "minimum_chrome_version": "125",
+  "permissions": [
+    "debugger",
+    "tabs",
+    "tabGroups",
+    "storage",
+    "alarms",
+    "downloads"
+  ],
+  "host_permissions": [
+    "http://127.0.0.1/*"
+  ],
+  "background": {
+    "service_worker": "worker.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "SPIRIT Browser"
+  },
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAr/xBosM1S/KC70oHR1EvFhybeZ0QBf/MnF92JUYP9p9OUX8fT91CEhPmmw4ClXA6ZZbAKz0c6zJ0Y+IDGn2f/Ytn5lAW0Xsoe3memZLtOzLjC4SbH8EiuPxsjL5Wuvxh3ayFCYzf8RIidaxl65JrM4RiTd2Sw/qvWMrqCfq52S58h+lkjO8YpwSOWbyF05jGtyfbmAtSMQnSbLe2Vogv85FNJx44wKX2gpov6fU47aV5zkhYzaqzSYyWHNG8ytSpcE49USkpDSF19pg+RxmWxVGSwl/bLnCXacIlc09Z1nzZxb6F8CrIFYeqLB/OpA1wmymzBiVzMJubh/+VPZHClQIDAQAB"
+}

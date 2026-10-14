@@ -14,7 +14,7 @@ def generate_config(client: str, executable: str | None = None) -> str:
     if client == "codex":
         return (
             f"[mcp_servers.{SERVER_NAME}]\ncommand = {json.dumps(command)}\n"
-            f"args = {json.dumps(args)}\nstartup_timeout_sec = 30\ntool_timeout_sec = 40\n"
+            f"args = {json.dumps(args)}\nstartup_timeout_sec = 30\ntool_timeout_sec = 130\n"
         )
     if client == "opencode":
         value = {
@@ -24,7 +24,7 @@ def generate_config(client: str, executable: str | None = None) -> str:
                     "type": "local",
                     "command": [command, *args],
                     "enabled": True,
-                    "timeout": 40000,
+                    "timeout": 130000,
                 }
             },
         }

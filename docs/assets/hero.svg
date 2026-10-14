@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="660" viewBox="0 0 1440 660">
+<defs>
+<radialGradient id="glow"><stop stop-color="#7850c9" stop-opacity=".36"/><stop offset="1" stop-color="#0c0d12" stop-opacity="0"/></radialGradient>
+<linearGradient id="accent" x2="1" y2="1"><stop stop-color="#d6c1ff"/><stop offset="1" stop-color="#7e56df"/></linearGradient>
+<pattern id="grid" width="44" height="44" patternUnits="userSpaceOnUse"><path d="M44 0H0V44" fill="none" stroke="#fff" stroke-opacity=".025"/></pattern>
+<filter id="shadow"><feDropShadow dx="0" dy="15" stdDeviation="22" flood-opacity=".35"/></filter>
+</defs>
+<rect width="1440" height="660" rx="24" fill="#0c0d12"/><rect width="1440" height="660" rx="24" fill="url(#grid)"/>
+<ellipse cx="1100" cy="280" rx="510" ry="430" fill="url(#glow)"/>
+<g font-family="Arial,Helvetica,sans-serif">
+<path d="M64 52L88 74L78 76L73 89L66 86L71 74L64 77Z" fill="url(#accent)" stroke="#e8ddff" stroke-width="1.5"/>
+<text x="104" y="77" fill="#e9e5f2" font-size="17" letter-spacing="5">SPIRIT LABS</text>
+<rect x="1126" y="49" width="250" height="34" rx="17" fill="#191520" stroke="#725796" stroke-opacity=".55"/>
+<circle cx="1147" cy="66" r="4" fill="#86e5ce"/><text x="1162" y="71" fill="#c9bbdf" font-size="12" letter-spacing="1.8">BROWSER NATIVE / MCP</text>
+<text x="57" y="268" fill="#f5f1fc" font-size="155" font-weight="700" letter-spacing="-9">SPIRIT</text>
+<text x="66" y="333" fill="#bba0f5" font-size="42" font-weight="400" letter-spacing="2">Your browser. In motion.</text>
+<text x="68" y="390" fill="#a19ba9" font-size="21">Existing tabs. Your session. An independent cursor.</text>
+<g transform="translate(68 442)"><rect width="120" height="32" rx="6" fill="#19171f" stroke="#39313f"/><text x="17" y="21" fill="#cbc5d5" font-size="12" letter-spacing="1">CHROME MV3</text><rect x="134" width="116" height="32" rx="6" fill="#19171f" stroke="#39313f"/><text x="153" y="21" fill="#cbc5d5" font-size="12" letter-spacing="1">LOCAL FIRST</text><rect x="264" width="121" height="32" rx="6" fill="#19171f" stroke="#39313f"/><text x="282" y="21" fill="#cbc5d5" font-size="12" letter-spacing="1">WINDOWS 11</text></g>
+<g transform="translate(812 151)" filter="url(#shadow)">
+<rect width="558" height="350" rx="16" fill="#13131c" stroke="#5c427d" stroke-width="1.5"/>
+<path d="M16 0H542Q558 0 558 16V50H0V16Q0 0 16 0" fill="#1d1927"/>
+<circle cx="22" cy="25" r="4" fill="#695c7f"/><circle cx="38" cy="25" r="4" fill="#695c7f"/><circle cx="54" cy="25" r="4" fill="#695c7f"/>
+<rect x="85" y="10" width="153" height="30" rx="7" fill="#332341"/><circle cx="101" cy="25" r="4" fill="#b397ff"/><text x="116" y="30" fill="#ddd0f4" font-size="12">SPIRIT</text>
+<text x="454" y="30" fill="#8a7c9e" font-size="11">CONNECTED</text>
+<rect x="24" y="70" width="510" height="32" rx="8" fill="#1e1b28"/><text x="40" y="91" fill="#9d90ad" font-size="12">@ Find a tab, then get to work</text>
+<rect x="24" y="120" width="244" height="144" rx="10" fill="#191724"/>
+<rect x="42" y="139" width="65" height="7" rx="3.5" fill="#776188"/><rect x="42" y="162" width="201" height="5" rx="2.5" fill="#393043"/><rect x="42" y="178" width="176" height="5" rx="2.5" fill="#393043"/>
+<rect x="40" y="209" width="105" height="35" rx="7" fill="#b89bf4"/><text x="70" y="232" fill="#251733" font-size="13" font-weight="700">PLAY</text>
+<rect x="35" y="204" width="115" height="45" rx="10" fill="none" stroke="#73deef" stroke-opacity=".8"/>
+<rect x="288" y="120" width="246" height="144" rx="10" fill="#191724"/>
+<g fill="#30263f"><rect x="306" y="138" width="47" height="47" rx="6"/><rect x="364" y="138" width="47" height="47" rx="6"/><rect x="422" y="138" width="47" height="47" rx="6"/><rect x="306" y="196" width="47" height="47" rx="6"/><rect x="364" y="196" width="47" height="47" rx="6"/><rect x="422" y="196" width="47" height="47" rx="6"/></g>
+<rect x="364" y="196" width="47" height="47" rx="6" fill="#9265d1"/><text x="374" y="226" fill="#f6eafe" font-size="20" font-weight="700">64</text><text x="316" y="169" fill="#b6a2cf" font-size="20">16</text><text x="375" y="169" fill="#b6a2cf" font-size="20">32</text>
+<path d="M473 301C360 322 216 291 105 227" fill="none" stroke="#9474c3" stroke-width="1.5" stroke-dasharray="4 7"/>
+<circle cx="104" cy="227" r="28" fill="#78e1ee" fill-opacity=".07" stroke="#78e1ee" stroke-opacity=".45"/>
+<path d="M103 224L135 251L120 254L114 269L108 266L114 251L103 256Z" fill="url(#accent)" stroke="#f2eaff" stroke-width="2"/>
+<text x="25" y="324" fill="#877796" font-size="11" letter-spacing="2">OBSERVE</text><text x="122" y="324" fill="#594762" font-size="16">/</text><text x="145" y="324" fill="#877796" font-size="11" letter-spacing="2">ACT</text><text x="197" y="324" fill="#594762" font-size="16">/</text><text x="220" y="324" fill="#877796" font-size="11" letter-spacing="2">VERIFY</text>
+</g>
+<path d="M68 555H1372" stroke="#28222e"/>
+<text x="68" y="601" fill="#716978" font-size="13" letter-spacing="1.5">CODEX  /  CLAUDE CODE  /  OPENCODE  /  ANTIGRAVITY</text>
+<text x="1193" y="601" fill="#aa91c6" font-size="13" letter-spacing="2">OPEN SOURCE</text>
+</g></svg>

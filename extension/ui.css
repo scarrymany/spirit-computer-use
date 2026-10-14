@@ -1,0 +1,5 @@
+:root{color-scheme:dark;font:14px/1.5 system-ui;background:#17151e;color:#eeeaf7}
+body{min-width:300px;max-width:460px;padding:20px;margin:0}h1{font-size:20px;letter-spacing:.04em;margin:0 0 16px}
+p{white-space:pre-wrap;overflow-wrap:anywhere}button{border:0;border-radius:8px;padding:10px 14px;background:#b9a0ff;color:#17151e;font:inherit;cursor:pointer;margin:4px 8px 4px 0}
+button.secondary{background:#35313f;color:#fff}.note{font-size:12px;color:#afa7bf}button:focus-visible{outline:2px solid #67e8f9;outline-offset:3px}
+#search{display:block;width:100%;margin:16px 0 8px;padding:10px;box-sizing:border-box;background:#24202e;color:#fff;border:1px solid #514560;border-radius:8px}#tabs{max-height:360px;overflow:auto}.tab{display:block;text-align:left;width:100%;background:#25212f;color:#eee;margin:4px 0}.tab:hover{background:#373046}.tab strong,.tab small{display:block;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}.tab small{font-size:11px;color:#aca3bd}

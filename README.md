@@ -1,145 +1,106 @@
-# SPIRIT Computer Use
+<p align="center"><img src="docs/assets/hero.svg" alt="SPIRIT Browser - Your browser. In motion." width="100%"></p>
 
-**Windows 11 computer use for MCP agents and CLI workflows.**
+<p align="center">
+<a href="https://github.com/scarrymany/spirit-computer-use/actions/workflows/ci.yml"><img src="https://github.com/scarrymany/spirit-computer-use/actions/workflows/ci.yml/badge.svg" alt="Checks"></a>
+<img src="https://img.shields.io/badge/Windows-11-9c83ff?style=flat-square" alt="Windows 11">
+<img src="https://img.shields.io/badge/Chrome-MV3-73e3e0?style=flat-square" alt="Chrome MV3">
+<a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-eee8ff?style=flat-square" alt="MIT"></a>
+</p>
 
-SPIRIT gives an agent window screenshots, accessibility text, mouse and keyboard
-tools, with a visible purple window border and cyan pointer halo. One local
-engine connects to Codex, Claude Code, OpenCode, Antigravity and other stdio MCP
-clients. No model API key, account, cloud service or network listener is required
-by the engine itself.
+<p align="center"><strong>Your tabs. Your session. A cursor of its own.</strong><br>
+Browser tools for MCP agents, using the Chrome you already have open.</p>
 
-![SPIRIT controlling its disposable test application](docs/assets/preview.png)
+SPIRIT Browser connects to your ordinary Chrome profile through its own Manifest V3
+extension. It sees existing tabs, reads pages, captures background screenshots and sends
+input through Chrome DevTools Protocol. Your system mouse stays where you left it.
 
-Version **0.1.0**. Independent software inspired by window-scoped computer-use
-workflows. It is not a byte-for-byte or API-compatible replacement for the
-OpenAI plugin. See [client validation levels](docs/clients.md#validation-levels).
+The Python package and skill retain the name `spirit-computer-use` for existing integrations.
+Version 0.2 removes desktop control completely.
 
-## Install
+## Start on Windows 11
 
-Requirements: Windows 11 x64, a standard Python 3.10-3.13 installation with Tk,
-an unlocked interactive desktop, and Git. Administrator privileges are not required.
+Install Python 3.10-3.13 x64, then run PowerShell:
 
 ```powershell
 git clone https://github.com/scarrymany/spirit-computer-use.git
 cd spirit-computer-use
-./scripts/install.ps1
+.\scripts\install.ps1
+.\.venv\Scripts\python.exe -m spirit_computer_use browser-setup --destination "$([Environment]::GetFolderPath('Desktop'))\SPIRIT Browser"
 ```
 
-The installer creates `.venv`, checks the runtime and generates connection snippets
-under `artifacts/integrations/`. It does not overwrite client settings. If PowerShell
-script execution is restricted by your environment, run the underlying commands:
+Open `chrome://extensions`, enable **Developer mode**, choose **Load unpacked**, and select
+**SPIRIT Browser** on your desktop. Open the extension popup and press **Connect**.
+Keep this folder: Chrome reads the unpacked extension from it.
+
+Generate the configuration for your agent and merge the entry into its existing settings:
 
 ```powershell
-python -m venv .venv
-./.venv/Scripts/python.exe -m pip install -e .
-./.venv/Scripts/python.exe -m spirit_computer_use doctor
-./.venv/Scripts/python.exe -m spirit_computer_use config codex
+.\.venv\Scripts\python.exe -m spirit_computer_use config antigravity
+# Also: codex, claude, opencode, cursor, vscode, generic
 ```
 
-Connect using [the client setup guide](docs/clients.md). Add the portable
-[skill](skills/spirit-computer-use/SKILL.md) to your agent's skill directory.
-The skill provides workflow instructions; the MCP server supplies the actual tools.
+Copy `skills/spirit-computer-use` into your client's skill directory. Restart its MCP
+connection after an upgrade. See [client setup](docs/clients.md) for paths and compatibility.
 
-For Codex, from the checkout:
+## What the agent can do
 
-```powershell
-$pythonPath = (Resolve-Path '.venv/Scripts/python.exe').Path
-codex mcp add spirit-computer-use -- $pythonPath -m spirit_computer_use serve
-```
-
-## Tools
-
-| Operation | Tools |
+| Capability | Behavior |
 | --- | --- |
-| Discover | `list_windows`, `get_window`, `list_apps` |
-| Observe | `get_window_state`, `status` |
-| Focus and launch | `activate_window`, `launch_app` |
-| Pointer | `click`, `move_pointer`, `scroll`, `drag` |
-| Keyboard | `press_key`, `type_text` |
-| Accessibility | `set_value`, `perform_secondary_action` |
-| Stop/resume | `emergency_stop`, `resume` |
+| Existing tabs | List titles, URLs and activity; search, open, activate and close |
+| Visual understanding | Background PNG, accessible trees, short element refs, iframe and shadow DOM support |
+| Independent input | Animated SVG cursor, click/double/right click, drag, scroll, Unicode and shortcuts |
+| Forms | Text, select, checkbox, file upload with confirmation |
+| Debugging | Console and network metadata, explicit JavaScript with confirmation |
+| Files | PNG, PDF and tracked downloads collected into your chosen folder |
+| Games | Screenshot/action loop with arrow keys and bounded key holds |
+| Tab mentions | MCP resources, copied `@spirit-tab:ID` mentions and exported files for @ pickers |
+| Recovery | Fresh snapshots, stale-ref refresh, navigation checks and emergency stop |
 
-The agent selects a complete window identity, observes it and then acts using the
-returned `snapshot_id`. Input consumes that snapshot. Coordinates are original
-physical image pixels, relative to the window. New observations, movement,
-resizing and timeouts invalidate old coordinates/indices. Scroll units are wheel
-units: 120 is one notch, positive vertical values move down.
+Only controlled tabs enter the purple **SPIRIT** group. Disconnect releases them and
+restores their original grouping. The visible frame and cursor live inside an isolated
+world and shadow root. Chrome also displays its own debugger indicator.
 
-Screenshots use Windows Graphics Capture by HWND, including occluded windows.
-Accessibility uses UI Automation. Input uses SendInput with foreground and
-coordinate hit checks. Unicode input includes surrogate pairs and leaves the
-clipboard alone. Standard controls can be edited through UIA without typing.
+## Connection choices
 
-## Visibility and stopping
+**Extension first.** `chrome.debugger` attaches to your normal tabs without restarting Chrome,
+changing profiles or exposing a debugging port. A token-authenticated loopback bridge accepts
+only this extension's exact Origin. Multiple MCP clients share the bridge; one client owns
+a tab at a time.
 
-The purple frame marks the observed/controlled window. The cyan halo follows
-the pointer during activity, then disappears. The overlay is non-activating and
-click-through. It does not globally replace the user's cursor theme.
+**CDP fallback.** Chrome 144+ offers consent-based access at
+`chrome://inspect/#remote-debugging`. Enable it and approve Chrome's connection dialog.
+SPIRIT reads the session's `DevToolsActivePort`; it does not launch your default profile
+with `--remote-debugging-port`. See [architecture and restrictions](docs/architecture.md).
 
-Press **Pause** or **Ctrl+Alt+Escape** to latch an emergency stop. Input stays
-blocked until the user asks the agent to `resume`. The monitor continues working
-with `serve --no-overlay`. SPIRIT releases its recorded held inputs on worker
-timeout/shutdown; actions already delivered cannot be undone.
+## Controls and honest limits
 
-By default, the overlay is excluded from capture. To include it in a recording,
-set `SPIRIT_RECORD_OVERLAY=1` in the MCP server's environment.
+- **Stop:** Pause, Ctrl+Alt+Escape, the page's Stop button or the extension popup.
+- Password fields require manual input. The agent must ask before purchases, messages,
+  deletion and payment entry. Built-in button heuristics cannot understand every website.
+- Arbitrary JS and uploads require a separate user confirmation. These are powerful tools;
+  website content is untrusted input, not authorization.
+- Native @ autocomplete belongs to the host application. MCP resources and tab files provide
+  selection where supported; SPIRIT cannot replace another application's composer.
+- Chrome's extension debugger does not expose `Browser.setDownloadBehavior`. Extension mode
+  tracks its own downloads, then copies completed files into the requested folder. Direct
+  CDP uses `Browser.setDownloadBehavior`.
+- CDP fallback lacks Chrome extension tab groups and active-tab metadata. Confirmation tools
+  still require the extension bridge. Restricted Chrome pages require manual interaction.
+- No built-in AI model, game solver or guaranteed score. The connected agent makes decisions.
 
-## CLI
-
-```powershell
-./.venv/Scripts/python.exe -m spirit_computer_use windows
-./.venv/Scripts/python.exe -m spirit_computer_use config claude
-./.venv/Scripts/python.exe -m spirit_computer_use session
-```
-
-`session` accepts one JSON request per line and keeps snapshot state alive:
-
-```json
-{"operation":"list_windows","arguments":{}}
-```
-
-Send subsequent requests with the returned window and snapshot data. CLI captures
-include `image_base64`; MCP returns native PNG image blocks. The `capture` subcommand
-takes a listed HWND and a new output filename. It refuses to overwrite existing files.
-
-## Boundaries
-
-- Windows 11 x64 only. macOS, Linux, secure desktops, locked sessions and UAC
-  prompts are unsupported. Elevated targets can reject a normal-integrity process.
-- Some protected surfaces refuse capture. Minimized windows must be restored.
-- UIA content depends on the application. Canvas editors, games and inaccessible
-  controls may have sparse trees. `type_text` requires a recognized editable focus;
-  password fields require manual entry.
-- Popups can have separate HWNDs; select them explicitly. SPIRIT does not yet
-  combine all transient surfaces into one snapshot like some integrated products.
-- The selected agent/model must support MCP image content for screenshot reasoning.
-  A model's errors, client permissions and application behavior are not eliminated
-  by the transport. Only automate actions actually authorized by the user.
-- SPIRIT does not persist screenshots or typed text unless a CLI output file is
-  explicitly requested. MCP observations are transmitted to the connected agent,
-  whose provider may process them according to that client's settings.
-
-## Development and verification
+## Develop and verify
 
 ```powershell
-./scripts/install.ps1 -Dev
-./.venv/Scripts/python.exe -m pytest -q -m 'not desktop'
-./.venv/Scripts/python.exe -m ruff check src tests scripts
-./.venv/Scripts/python.exe -m build
+.\scripts\install.ps1 -Dev
+$env:SPIRIT_TEST_CHROME = .\scripts\install-test-browser.ps1
+.\.venv\Scripts\python.exe -m ruff check .
+.\.venv\Scripts\python.exe -m ruff format --check .
+.\.venv\Scripts\python.exe -m pytest -q
+.\.venv\Scripts\python.exe -m build
 ```
 
-Real desktop tests use a disposable .NET 9 WinForms window. They move the mouse
-and focus; run them when the desktop is available:
+Browser tests run on local fixture pages in an isolated Chrome for Testing profile.
+[Validation details](docs/validation.md) distinguish test coverage from client compatibility.
+[Third-party notices](THIRD_PARTY_NOTICES.md) record dependencies and design references.
 
-```powershell
-dotnet build tests/fixture/Spirit.TestWindow.csproj -c Release
-$env:SPIRIT_DESKTOP_TEST = '1'
-./.venv/Scripts/python.exe -m pytest -q
-```
-
-See [validation results](docs/validation.md), [architecture](docs/architecture.md)
-and [third-party notices](THIRD_PARTY_NOTICES.md). The focus attachment technique
-is adapted from MIT-licensed Windows-MCP. Microsoft UFO was also reviewed;
-no UFO code is included. Runtime dependencies retain their own licenses.
-
-Released under the [MIT license](LICENSE).
+MIT licensed. Built for Windows 11 and agents that speak MCP.

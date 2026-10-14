@@ -1,77 +1,69 @@
 # Architecture
 
-```text
-MCP client / agent
-      |
-      | JSON-RPC stdio (text + PNG image content)
-      v
-Python MCP server ---- Controller deadlines / input ledger
-                            |
-                            +-- Spawned desktop worker
-                            |     Windows Graphics Capture (HWND)
-                            |     UI Automation (COM)
-                            |     SendInput / foreground validation
-                            |     Bounded snapshot cache
-                            |
-                            +-- Spawned overlay and stop monitor
-                                  Non-activating transparent Tk window
-                                  Purple outline, cyan cursor ring
-                                  Pause / Ctrl+Alt+Escape latch
+```mermaid
+flowchart LR
+  A[CLI / MCP agent] -->|stdio| B[Python MCP server]
+  B -->|authenticated loopback WebSocket| C[Shared local bridge]
+  C -->|exact extension Origin| D[MV3 extension]
+  D -->|chrome.debugger / CDP| E[Existing Chrome tabs]
+  B -. consent-based CDP fallback .-> E
 ```
 
-## Process ownership
+The extension is the primary connection. It requires no separate profile and discovers
+already-open tabs through chrome.tabs. Debugger attachment is lazy. Selected tabs enter
+a purple SPIRIT group and are restored on release; another MCP owner cannot claim them.
+An idle session detaches after five minutes. The bridge binds only 127.0.0.1:47831 and
+rotates its token on startup. Registered unpacked installations receive the new token.
+Engine connections reject Origin headers; extension connections require the pinned ID.
+This protects against web origins, not malicious local software running as the same user.
 
-Desktop calls are serialized inside each controller and across SPIRIT clients by
-a named Windows mutex. Native calls live outside the MCP event loop. A native
-timeout terminates the worker, invalidates its snapshots, latches input stop and
-reports an unknown outcome. It never retries a write automatically.
+The Python engine owns observation snapshots, navigation generations, AX refs and input
+sequencing. Coordinates and PNG dimensions use CSS pixels; devicePixelRatio is returned
+separately. OOP iframe sessions are attached through CDP and same-process frames are read
+with their frame IDs. Ref refresh is allowed only for one unambiguous accessible identity
+in the same frame. Mutations with unknown outcomes are never replayed automatically.
 
-Workers launch through the base interpreter's `pythonw.exe` using Python's
-spawn context. Using the virtual-environment redirector for pythonw inserts an
-extra process and breaks duplicated Windows synchronization handles. The spawn
-preparation restores the environment's import paths, and pywin32's documented
-bootstrap module restores its DLL search directory. Native libraries are imported
-only inside the worker, keeping their initialization under the operation deadline.
+Background input uses focus emulation and an acknowledged 1x1 screencast to keep the tab's
+renderer responsive. Screencast frames are discarded. Screenshot capture is separate.
+Neither path activates the tab. This was necessary on the tested Chrome builds: focus
+emulation alone did not reliably deliver input to an inactive tab.
 
-MCP stdout carries protocol messages only. Worker output is separate. Shutdown
-closes the worker connection, stops the overlay, joins processes and closes the
-overlay queue. The overlay also notices a dead parent. A shared ledger records
-only SPIRIT's held keys/buttons so forced worker cleanup can release those inputs.
-There is no Windows service or persistent background startup task.
+Input.dispatchMouseEvent and Input.dispatchKeyEvent provide browser-local input. Unicode
+uses Input.insertText. Fixed form helpers dispatch input/change for selects; upload uses
+DOM.setFileInputFiles. There are no OS input injection APIs. A Windows hotkey watcher only
+reads emergency-stop key state. The SVG pointer lives in an isolated world with a closed
+shadow root; its host passes events through except for the Stop control. Navigation
+reinserts the overlay through Page.addScriptToEvaluateOnNewDocument.
 
-## Observation identity
+## Chrome API restrictions
 
-A `Window` includes HWND, PID, process creation time, executable path and title.
-Before each operation the worker checks that the process identity still matches.
-Snapshots add physical DWM bounds, a random id, timestamp and UIA element references.
-The latest observation supersedes earlier observations of the same window. The
-cache holds at most 16 snapshots with a 120-second lifetime.
+Chrome extension debugging exposes a subset of CDP domains. Browser.setDownloadBehavior
+is unavailable, and Page.setDownloadBehavior is also rejected as a browser-level command.
+Extension downloads are matched to owned Page.downloadWillBegin events, routed through
+chrome.downloads, and copied only after completion. Unrelated downloads are not selected
+by referrer. Source files remain in Chrome's Downloads directory. Existing destinations
+are not overwritten.
 
-Input requires an unexpired matching snapshot, unchanged bounds, successful
-activation and a foreground check. Pointer actions additionally hit-test the
-coordinate against the selected root HWND. Keys/buttons are released in cleanup.
-These checks limit common stale-coordinate mistakes; they cannot prevent an app
-from changing content between observation and input. The agent must verify outcomes.
+Direct downloads use GUID filenames and report only completed downloads owned by the
+controlled tab. Browser.setDownloadBehavior is browser-context-wide; it temporarily
+affects the default context and is reset to Chrome's default on disconnect. Use extension
+mode when other tabs must retain independent download behavior.
 
-## Images and accessibility
+Direct CDP uses the existing Chrome session's DevToolsActivePort. Since Chrome 136,
+remote-debugging flags are restricted for the default data directory. Chrome 144+ adds
+an explicit user-consent connection flow, so that is the supported fallback. It has no
+extension-only group/activity APIs. Sensitive actions still use the extension confirmation
+UI and fail explicitly if that UI is unavailable.
 
-WGC captures the selected HWND, without rescaling. Its size must match DWM bounds;
-otherwise the operation rejects the observation rather than guessing a scale.
-The original image dimensions and window origin accompany every screenshot.
+## Security boundaries
 
-UIA traversal is limited by time, element count and depth. Partial results identify
-truncation and provider errors. A hung individual COM call is bounded by the outer
-worker deadline. Password values are omitted, and password entry is not automated.
+A fresh snapshot is required for input. Stop and navigation changes invalidate actions.
+Passwords require manual entry. Upload and arbitrary JS use an extension-owned approval
+window; page scripts cannot answer it. Buttons with sensitive labels and Enter get an
+additional confirmation guard. These heuristics are not semantic enforcement: the agent
+must still obtain authorization for purchases, messages, deletion and payments, including
+canvas controls and unfamiliar languages. Arbitrary approved JS can access page data.
 
-Separate transient windows are separately selectable. Automatic popup composition,
-browser DOM extraction and an exact `@oai/sky` API shim are outside version 0.1.0.
-
-## Open-source choices
-
-Windows-MCP and Microsoft UFO were inspected as reference implementations. The
-dual-thread activation strategy from Windows-MCP was adapted under MIT; see the
-exact revision and license in `THIRD_PARTY_NOTICES.md`. Its full agent toolset is
-not bundled. Capture, COM wrappers and MCP use maintained third-party packages.
-
-The engine does not invoke an LLM, charge for inference, send telemetry or open a
-network port. MCP clients control their own inference provider and permissions.
+References: [chrome.debugger](https://developer.chrome.com/docs/extensions/reference/api/debugger),
+[consent-based connection](https://developer.chrome.com/docs/devtools/agents/use-cases/auto-connect),
+[remote debugging restrictions](https://developer.chrome.com/blog/remote-debugging-port).

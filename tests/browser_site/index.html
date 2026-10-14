@@ -1,0 +1,32 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>SPIRIT browser verification</title>
+<style>body{font:16px system-ui;padding:24px;background:#f7f6fc}button,input,select{padding:10px;margin:5px}canvas{border:2px solid #6840b0}#cover{display:none;position:fixed;inset:0;background:#fff8;z-index:100}#drag{width:80px;height:50px;background:#a78bfa;touch-action:none}iframe{width:420px;height:110px}#bottom{margin-top:1000px}</style>
+<h1>SPIRIT browser verification</h1><p id="result">Ready</p>
+<button id="play" type="button">Play</button><button id="replace" type="button">Replace node</button>
+<label>Display name<input id="name" aria-label="Display name"></label>
+<label>Secret<input type="password" aria-label="Secret" value="hidden-secret"></label>
+<label><input id="check" type="checkbox">Enabled</label>
+<select aria-label="Color"><option value="violet">Violet</option><option value="cyan">Cyan</option></select>
+<input id="upload" type="file" aria-label="Upload document">
+<button id="double" type="button">Double target</button><button id="right" type="button">Right target</button>
+<div id="shadow"></div><div id="drag">Drag me</div>
+<canvas id="game" width="240" height="100" tabindex="0" aria-label="Arrow game"></canvas>
+<p id="score">Score: 0</p>
+<iframe title="Same frame" src="/frame.html"></iframe>
+<iframe title="Cross frame" id="cross"></iframe>
+<a href="/download">Download file</a><a href="/next.html">Next page</a>
+<button id="bottom" type="button">Bottom target</button><div id="cover">Blocking banner</div>
+<script>
+const result=document.getElementById('result');
+document.getElementById('play').onclick=()=>{result.textContent='Played';console.log('play event');fetch('/ping');};
+document.getElementById('replace').onclick=()=>{const p=document.getElementById('play');const c=p.cloneNode(true);c.onclick=p.onclick;p.replaceWith(c);};
+document.getElementById('double').ondblclick=()=>result.textContent='Double clicked';
+document.getElementById('right').oncontextmenu=e=>{e.preventDefault();result.textContent='Right clicked';};
+document.getElementById('bottom').onclick=()=>result.textContent='Bottom clicked';
+document.getElementById('shadow').attachShadow({mode:'open'}).innerHTML='<button type="button" onclick="document.getElementById(\'result\').textContent=\'Shadow clicked\'">Shadow play</button>';
+document.getElementById('cross').src=location.origin.replace('127.0.0.1','localhost')+'/frame.html?cross';
+const canvas=document.getElementById('game'), context=canvas.getContext('2d');
+context.fillStyle='#a78bfa';context.fillRect(10,10,50,50);
+let score=0;document.addEventListener('keydown',e=>{if(e.key.startsWith('Arrow')){score+=10;document.getElementById('score').textContent='Score: '+score;e.preventDefault();}});
+const drag=document.getElementById('drag');let dragging=false;drag.onpointerdown=e=>{dragging=true;drag.setPointerCapture(e.pointerId);};drag.onpointermove=e=>{if(dragging)drag.style.transform=`translateX(${e.clientX-80}px)`;};drag.onpointerup=()=>{dragging=false;result.textContent='Dragged';};
+console.log('fixture ready');
+</script></html>

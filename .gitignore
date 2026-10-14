@@ -10,3 +10,5 @@ artifacts/
 *.log
 bin/
 obj/
+.spirit/
+extension/connection.json

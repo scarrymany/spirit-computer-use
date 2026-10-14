@@ -19,7 +19,9 @@ if ($Dev) { $package = "$projectRoot[dev]" }
 & $runtime -m pip install -e $package
 if ($LASTEXITCODE -ne 0) { throw 'Package installation failed.' }
 & $runtime -m spirit_computer_use doctor
-if ($LASTEXITCODE -ne 0) { throw 'Desktop diagnostics failed.' }
+if ($LASTEXITCODE -ne 0) { throw 'Runtime diagnostics failed.' }
+& $runtime -m spirit_computer_use browser-setup
+if ($LASTEXITCODE -ne 0) { throw 'Browser extension preparation failed.' }
 
 $outputDirectory = Join-Path $projectRoot 'artifacts/integrations'
 New-Item -ItemType Directory -Path $outputDirectory -Force | Out-Null

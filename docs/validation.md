@@ -1,49 +1,41 @@
-# Validation record
+# Validation
 
-Local validation date: **2026-10-14**.
+Tests use local HTTP pages, an unpacked MV3 extension and a shared broker on an ephemeral
+loopback port. Playwright is a test dependency only; production input goes through CDP.
+The pinned test browser is Chrome for Testing 155.0.8059.79. Its archive digest is checked
+by scripts/install-test-browser.ps1 before extraction.
 
-Environment: Windows 11 x64 build 26200, Python 3.10.11, MCP SDK 1.30.0,
-windows-capture 2.0.1, pywinauto 0.6.9, Pillow 12.3.0.
+Coverage includes background screenshots and input, CSS pixels at devicePixelRatio 2,
+AX refs, same-process and cross-origin iframes, shadow DOM, stale-node refresh, covered
+controls, moving targets, drag/scroll, Unicode, iframe password rejection, forms,
+double/right clicks, keys, uploads with
+an approval window, downloads, PDF/PNG, console/network metadata, navigation and cleanup.
+The direct CDP test attaches to a disposable existing session and leaves it running after
+disconnect. Security tests cover Origin/token checks and local-endpoint restrictions.
+MCP tests initialize the stdio server and inspect its 26 browser/control tools.
 
-## Completed
+Set SPIRIT_HEADED_TEST=1 for visible test windows. Set SPIRIT_CURSOR_TEST=1 to assert
+unchanged OS cursor coordinates and foreground during the input sample; do not move the
+mouse during that measurement. Ordinary runs still record these observations.
 
-- **33 pytest tests passed**, including the opt-in desktop tests, in 8.68 seconds.
-- Ruff lint and formatting checks.
-- SKILL.md validation with the Codex skill-creator validator.
-- PowerShell installer: environment setup, dependency installation, runtime
-  diagnostics and generation of seven parseable client configuration files.
-- `pip check` reports no broken requirements.
-- Source distribution and wheel build. A wheel was installed into a separate
-  clean virtual environment and its `doctor` command successfully started the engine.
-- Archive inspection: no local environments, research clones, generated configuration
-  or compiled fixture outputs in the source distribution; adapted-code license in wheel.
-- Real overlay screenshot visually inspected. The README image was captured from
-  the disposable test application, not from a user's application.
+## Real Chrome check - 2026-10-14
 
-## Behaviors exercised
+The user loaded the unpacked extension into their ordinary Chrome profile. SPIRIT listed
+nine existing tabs, read the 2048 page and captured its background screenshot at 2545x1305
+CSS pixels. An ArrowLeft command changed the visible score from 0 to 4. The active tab,
+foreground window and measured OS cursor position were unchanged. No game-state JS was
+used. This verifies browser-local input, not a 30000-point game or universal website support.
+Private tab URLs and screenshots are not included in the repository.
 
-- Real MCP initialize, tool listing, tool calls, error results and clean shutdown.
-- Actual PNG image blocks and UIA text through MCP stdio.
-- HWND enumeration, identity refresh and foreground activation.
-- WGC screenshot capture with dimension checks.
-- UIA element discovery, focus, selected text and editable values.
-- Mouse clicks, Unicode text including Cyrillic/CJK/emoji, Ctrl+A, UIA toggle,
-  drag and vertical scroll, verified by the target application's resulting state.
-- Rejection of consumed, expired, moved-window and mismatched-identity snapshots.
-- Failed focus and failed capture invalidate earlier observations.
-- Emergency-stop blocking, explicit resume, worker deadlines and subprocess reaping.
-- Input ABI size, chord cleanup and recorded-input cleanup after interruption.
-- Configuration structure and executable paths containing spaces.
+## Original reported failures
 
-## Not established by these checks
+The earlier desktop client log showed an executable launch requested with a relative name,
+a truncated process creation timestamp rejected by strict window identity checks, and a
+click missing its required window argument. Version 0.2 removes that desktop API. Browser
+calls use tab IDs, short element refs and a snapshot ID rather than process timestamps.
 
-- End-to-end model-driven operation in every supported MCP host.
-- Every third-party application, browser engine or GPU surface.
-- Mixed-DPI multimonitor configurations, HDR, RDP reconnects, Windows ARM64,
-  secure/elevated desktops or full-screen games.
-- Pixel-identical appearance or complete API parity with the OpenAI plugin.
-- Reliability benchmarks over long-running sessions or a third-party security audit.
+Client config parsing is tested; interactive operation inside every supported CLI is not.
 
-The GitHub workflow runs the non-desktop suite and package build on Windows with
-Python 3.10, 3.12 and 3.13. Its results are separate from the local desktop evidence
-and can be inspected under the repository's Actions tab.
+The local full suite passed 19 tests. Ruff checks and formatting passed. A real MCP
+client session listed nine tab resources, read a copied @ mention and exported tab files.
+The extension reconnected after bridge restart and token rotation.

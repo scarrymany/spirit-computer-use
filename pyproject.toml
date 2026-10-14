@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "spirit-computer-use"
-version = "0.1.0"
-description = "Window-scoped computer use for Windows 11, MCP agents and CLI workflows"
+version = "0.2.0"
+description = "Your Chrome tabs, an independent browser cursor, and MCP agents"
 readme = "README.md"
 requires-python = ">=3.10,<3.14"
 license = "MIT"
@@ -15,13 +15,11 @@ dependencies = [
   "mcp>=1.30,<2",
   "pydantic>=2.11,<3",
   "Pillow>=11,<13",
-  "windows-capture==2.0.1; sys_platform == 'win32'",
-  "pywinauto==0.6.9; sys_platform == 'win32'",
-  "psutil>=7,<8",
+  "websockets>=15,<16",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8,<10", "ruff>=0.11,<1", "build>=1.2,<2", "PyYAML>=6,<7", "tomli>=2,<3"]
+dev = ["pytest>=8,<10", "ruff>=0.11,<1", "build>=1.2,<2", "PyYAML>=6,<7", "tomli>=2,<3", "playwright==1.64.0"]
 
 [project.scripts]
 spirit = "spirit_computer_use.cli:main"
@@ -32,6 +30,9 @@ Repository = "https://github.com/scarrymany/spirit-computer-use"
 [tool.hatch.build.targets.wheel]
 packages = ["src/spirit_computer_use"]
 
+[tool.hatch.build.targets.wheel.force-include]
+"extension" = "spirit_computer_use/extension"
+
 [tool.ruff]
 target-version = "py310"
 line-length = 100
@@ -41,4 +42,4 @@ select = ["E", "F", "I", "UP", "B"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-markers = ["desktop: requires an unlocked Windows 11 desktop"]
+markers = ["browser: real Chromium extension and CDP integration"]
