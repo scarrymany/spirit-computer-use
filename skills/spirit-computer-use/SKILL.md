@@ -11,6 +11,14 @@ problem. This version has no desktop tools.
 
 ## Select and observe
 
+For games and canvas, prefer `browser_screenshot`: it returns just the image, CSS size and
+snapshot_id, without an accessibility tree or DOM-stability wait. Read the returned image
+directly. Do not inspect transcripts, parse tool output with Python, or analyze pixels to
+recover metadata already in the response. Reuse known board geometry until it changes.
+For a supported drag gesture, use `browser_drag` once; its response includes the next image
+and snapshot_id. Do not replace one drag with two clicks separated by full page reads.
+The fast screenshot may show an animation in progress; observe again when needed.
+
 1. Call `browser_connect`, then `browser_list_tabs`. Select the requested title/URL.
    Accept `@spirit-tab:ID`, `spirit://tab/ID`, an unambiguous title or an exported tab file.
    Resolve ambiguous requests against the list; do not choose an unrelated tab.
@@ -29,6 +37,10 @@ left/right/double clicks and hover. `browser_drag` and `browser_scroll` use CSS 
 `browser_type_text` supports Unicode; supply a ref for iframe inputs. Use `browser_form_input`
 for select/checkbox/text fields and `browser_press_keys` for shortcuts and arrow keys.
 `browser_hold_key` is bounded; `browser_release_keys` clears held keys.
+`browser_press_keys` returns fresh page text and a new snapshot in `observation` by default.
+Use `observation.text` to assess the result and `observation.snapshot_id` for the next move.
+For visual-only canvas state, take another screenshot. If `observation_error` is returned,
+the keys were already sent: read the page, do not repeat the last sequence.
 
 For games, repeat screenshot -> decide -> bounded input -> screenshot. Keep track of the
 visible score and report the achieved value. The server has no built-in model or solver.
@@ -38,6 +50,9 @@ from `browser_read_page` or `browser_get_page_text`. If structured extraction is
 `browser_evaluate` defaults to read-only execution without a confirmation window. Chrome
 rejects scripts with possible side effects. A blocked read is not permission to retry with
 `read_only=False`; use the observation/input tools instead. Reads must be synchronous.
+A rejected script is not a broken browser connection. Do not probe ports, install another
+automation library or switch to system keyboard/mouse input to continue a browser task.
+If MCP input itself fails, report that exact error and last observed state.
 
 Tabs stay in the background unless activation is requested. The SVG pointer is independent
 of the OS cursor. Controlled tabs temporarily join the purple SPIRIT group. Other tabs

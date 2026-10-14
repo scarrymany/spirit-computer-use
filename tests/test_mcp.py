@@ -20,7 +20,7 @@ def test_stdio_handshake_tools_and_status():
                 assert info.serverInfo.name == "SPIRIT Browser"
                 assert info.capabilities.resources.listChanged is True
                 tools = (await session.list_tools()).tools
-                assert len(tools) == 26
+                assert len(tools) == 27
                 assert all(
                     t.name not in {"list_windows", "launch_app", "get_window_state"} for t in tools
                 )

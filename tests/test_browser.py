@@ -176,6 +176,24 @@ def test_extension_end_to_end(tmp_path, monkeypatch, site):
                     before = await context.service_workers[0].evaluate(
                         "chrome.tabs.query({active:true}).then(t=>t.map(x=>x.id))"
                     )
+                    timings = {}
+                    started = time.perf_counter()
+                    full = await engine.read_page(tab)
+                    timings["full_ms"] = round((time.perf_counter() - started) * 1000)
+                    started = time.perf_counter()
+                    fast = await engine.read_page(tab, visual_only=True)
+                    timings["visual_ms"] = round((time.perf_counter() - started) * 1000)
+                    assert fast["frames"] == []
+                    assert fast["stability_checked"] is False
+                    assert fast["snapshot_id"] != full["snapshot_id"]
+                    assert engine.tabs[tab].refs == {}
+                    with Image.open(BytesIO(fast["png"])) as image:
+                        assert image.size == (1100, 800)
+                    for name, value in (("full", full), ("visual", fast)):
+                        timings[name + "_json_bytes"] = len(
+                            json.dumps({k: v for k, v in value.items() if k != "png"}).encode()
+                        )
+                    print("Observation benchmark:", json.dumps(timings))
                     state = await engine.read_page(tab)
                     assert await page.evaluate(
                         "document.getElementById('__spirit_overlay__').shadowRoot ==="
@@ -290,8 +308,29 @@ def test_extension_end_to_end(tmp_path, monkeypatch, site):
                     )
 
                     state = await engine.read_page(tab, screenshot=False)
-                    await engine.keys(tab, state["snapshot_id"], ["ArrowLeft", "ArrowDown"])
+                    move = await engine.keys(tab, state["snapshot_id"], ["ArrowLeft", "ArrowDown"])
                     assert await page.locator("#score").inner_text() == "Score: 20"
+                    assert "Score: 20" in move["observation"]["text"]
+                    for expected in (30, 40, 50):
+                        move = await engine.keys(
+                            tab, move["observation"]["snapshot_id"], ["ArrowRight"]
+                        )
+                        assert f"Score: {expected}" in move["observation"]["text"]
+                    with pytest.raises(ValueError, match="Snapshot"):
+                        await engine.keys(tab, state["snapshot_id"], ["ArrowDown"])
+
+                    async def fail_observation(_):
+                        raise RuntimeError("Observation unavailable")
+
+                    with monkeypatch.context() as patch:
+                        patch.setattr(engine, "get_page_text", fail_observation)
+                        partial = await engine.keys(
+                            tab, move["observation"]["snapshot_id"], ["ArrowRight"]
+                        )
+                    assert partial["sent"] == 1
+                    assert partial["observation_error"] == "Observation unavailable"
+                    assert partial["observe_again"] is True
+                    assert await page.locator("#score").inner_text() == "Score: 60"
                     state = await engine.read_page(tab, screenshot=False)
                     await engine.form_input(
                         tab, state["snapshot_id"], ref(state, "Color", "combobox"), "cyan"
@@ -318,7 +357,7 @@ def test_extension_end_to_end(tmp_path, monkeypatch, site):
                     await page.locator("#drag").scroll_into_view_if_needed()
                     state = await engine.read_page(tab, screenshot=False)
                     box = await page.locator("#drag").bounding_box()
-                    await engine.drag(
+                    dragged = await engine.drag_observe(
                         tab,
                         state["snapshot_id"],
                         box["x"] + 15,
@@ -327,6 +366,10 @@ def test_extension_end_to_end(tmp_path, monkeypatch, site):
                         box["y"] + 15,
                     )
                     assert await page.locator("#result").inner_text() == "Dragged"
+                    assert dragged["png"].startswith(b"\x89PNG")
+                    assert dragged["snapshot_id"] == engine.tabs[tab].snapshot
+                    assert dragged["observe_again"] is False
+                    assert dragged["frames"] == []
                     state = await engine.read_page(tab, screenshot=False)
                     await engine.click(
                         tab, state["snapshot_id"], ref=ref(state, "Bottom target", "button")

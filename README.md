@@ -74,6 +74,14 @@ with `--remote-debugging-port`. See [architecture and restrictions](docs/archite
 
 ## Controls and honest limits
 
+For fast visual interaction, use `browser_screenshot` instead of a full accessibility tree.
+It returns a PNG, CSS dimensions and a fresh snapshot without waiting for DOM stability.
+`browser_drag` includes the next screenshot by default; `browser_press_keys` includes fresh
+page text and the next snapshot. An observation error after input does not repeat the input.
+This reduces tool round trips; it does not control the model's thinking time or guarantee
+that a page has finished animating. Use full page reads for element refs and explicit waits
+when needed.
+
 - **Stop:** Pause, Ctrl+Alt+Escape, the page's Stop button or the extension popup.
 - Password fields require manual input. The agent must ask before purchases, messages,
   deletion and payment entry. Built-in button heuristics cannot understand every website.

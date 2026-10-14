@@ -311,7 +311,9 @@ class Browser:
         if "exceptionDetails" in result:
             if read_only:
                 raise RuntimeError(
-                    "Chrome rejected read-only JavaScript. Use browser_read_page or "
+                    "SCRIPT_REJECTED: Chrome rejected read-only JavaScript; this is not a "
+                    "connection failure. Do not change ports, install automation packages or "
+                    "use shell/OS input. Use browser_read_page or "
                     "browser_get_page_text for observation and CDP input tools for actions. "
                     "No automatic retry with write access. Details: "
                     + str(result["exceptionDetails"])[:1500]
@@ -389,14 +391,20 @@ class Browser:
         return result
 
     async def read_page(
-        self, tab_id: str, screenshot: bool = True, interactive_only=False, include_cursor=False
+        self,
+        tab_id: str,
+        screenshot: bool = True,
+        interactive_only=False,
+        include_cursor=False,
+        visual_only: bool = False,
     ) -> dict:
         tab = await self._tab(tab_id)
-        stability = await self.wait(tab)
+        stability = {"stability_checked": False} if visual_only else await self.wait(tab)
         tab.snapshot = ""
         generation = tab.generation
         refs, trees = {}, []
-        for session, frame in await self._frames(tab):
+        frames = [] if visual_only else await self._frames(tab)
+        for session, frame in frames:
             await self.transport.cdp(
                 tab.id, "DOM.getDocument", {"depth": 0, "pierce": True}, session
             )
@@ -453,7 +461,11 @@ class Browser:
         info = await self._evaluate(
             tab, "({url:location.href,title:document.title,dpr:devicePixelRatio})"
         )
-        png = await self._screenshot(tab, include_cursor=include_cursor) if screenshot else None
+        png = (
+            await self._screenshot(tab, include_cursor=include_cursor, geometry=geometry)
+            if screenshot
+            else None
+        )
         if generation != tab.generation:
             raise RuntimeError("Page navigated during observation; read_page again")
         tab.refs, tab.geometry = refs, geometry
@@ -472,8 +484,9 @@ class Browser:
             "png": png,
         }
 
-    async def _screenshot(self, tab: Tab, include_cursor=False) -> bytes:
-        geometry = await self._geometry(tab)
+    async def _screenshot(self, tab: Tab, include_cursor=False, geometry=None) -> bytes:
+        if geometry is None:
+            geometry = await self._geometry(tab)
         if not include_cursor:
             await self._visual(
                 tab,
@@ -727,8 +740,8 @@ class Browser:
     async def _move(self, tab: Tab, x: float, y: float, box=None, button="none") -> None:
         start_x, start_y = tab.pointer
         distance = math.hypot(x - start_x, y - start_y)
-        duration = min(0.4, 0.15 + distance / 4000)
-        steps = max(8, round(duration * 60))
+        duration = min(0.12, 0.05 + distance / 20000)
+        steps = max(3, round(duration * 60))
         dx, dy = x - start_x, y - start_y
         bend = min(35, distance * 0.08)
         nx, ny = (-dy / distance, dx / distance) if distance else (0, 0)
@@ -838,7 +851,9 @@ class Browser:
                     },
                 )
 
-    async def keys(self, tab_id: str, snapshot_id: str, keys: list[str], interval_ms=50) -> dict:
+    async def keys(
+        self, tab_id: str, snapshot_id: str, keys: list[str], interval_ms=50, observe=True
+    ) -> dict:
         for key in keys:
             key_events(key)
         tab = await self._begin(tab_id, snapshot_id)
@@ -852,7 +867,16 @@ class Browser:
                 )
             await self._key(tab, key)
             await asyncio.sleep(interval_ms / 1000)
-        return {"sent": len(keys), "observe_again": True}
+        result = {"sent": len(keys), "observe_again": True}
+        if observe:
+            try:
+                result["observation"] = await self.get_page_text(tab.id)
+                result["observe_again"] = False
+            except Exception as error:
+                # Input already completed; an observation failure must not invite a replay.
+                result["observation_error"] = str(error)[:1000]
+                result["next_step"] = "Keys were sent. Read the page; do not repeat these keys."
+        return result
 
     async def type_text(
         self, tab_id: str, snapshot_id: str, text: str, ref=None, replace=False
@@ -912,6 +936,19 @@ class Browser:
             {"type": "mouseWheel", "x": x, "y": y, "deltaX": delta_x, "deltaY": delta_y},
         )
         return {"ok": True, "observe_again": True}
+
+    async def drag_observe(
+        self, tab_id, snapshot_id, from_x, from_y, to_x, to_y, screenshot_after=True
+    ) -> dict:
+        result = await self.drag(tab_id, snapshot_id, from_x, from_y, to_x, to_y)
+        if screenshot_after:
+            try:
+                result.update(await self.read_page(tab_id, visual_only=True))
+                result["observe_again"] = False
+            except Exception as error:
+                result["observation_error"] = str(error)[:1000]
+                result["next_step"] = "Drag completed. Observe the page; do not replay the drag."
+        return result
 
     async def drag(self, tab_id, snapshot_id, from_x, from_y, to_x, to_y) -> dict:
         tab = await self._begin(tab_id, snapshot_id)
