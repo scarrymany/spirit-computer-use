@@ -1,0 +1,44 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "spirit-computer-use"
+version = "0.1.0"
+description = "Window-scoped computer use for Windows 11, MCP agents and CLI workflows"
+readme = "README.md"
+requires-python = ">=3.10,<3.14"
+license = "MIT"
+license-files = ["LICENSE", "THIRD_PARTY_NOTICES.md"]
+authors = [{name = "SPIRIT contributors"}]
+dependencies = [
+  "mcp>=1.30,<2",
+  "pydantic>=2.11,<3",
+  "Pillow>=11,<13",
+  "windows-capture==2.0.1; sys_platform == 'win32'",
+  "pywinauto==0.6.9; sys_platform == 'win32'",
+  "psutil>=7,<8",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<10", "ruff>=0.11,<1", "build>=1.2,<2", "PyYAML>=6,<7", "tomli>=2,<3"]
+
+[project.scripts]
+spirit = "spirit_computer_use.cli:main"
+
+[project.urls]
+Repository = "https://github.com/scarrymany/spirit-computer-use"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/spirit_computer_use"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["desktop: requires an unlocked Windows 11 desktop"]

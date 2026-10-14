@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "spirit-computer-use": {
+      "command": "${CLAUDE_PLUGIN_ROOT}/.venv/Scripts/python.exe",
+      "args": ["-m", "spirit_computer_use", "serve"]
+    }
+  }
+}

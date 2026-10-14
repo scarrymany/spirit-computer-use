@@ -1,0 +1,9 @@
+{
+  "name": "spirit-computer-use",
+  "version": "0.1.0",
+  "description": "Windows 11 computer use with window capture, UI Automation, mouse, keyboard and visible activity indicators.",
+  "author": { "name": "SPIRIT contributors" },
+  "homepage": "https://github.com/scarrymany/spirit-computer-use",
+  "repository": "https://github.com/scarrymany/spirit-computer-use",
+  "license": "MIT"
+}

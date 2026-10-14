@@ -1,0 +1,4 @@
+interface:
+  display_name: "SPIRIT Computer Use"
+  short_description: "Control Windows 11 apps with screenshots and input"
+  default_prompt: "Use $spirit-computer-use to inspect and control the requested Windows application."
