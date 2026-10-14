@@ -8,7 +8,9 @@ SPIRIT Browser is MIT licensed. Dependencies retain their own licenses:
 - Pillow: HPND
 - Playwright (test dependency): Apache-2.0
 
-The browser implementation and SVG assets in this repository are original. The following
+The browser implementation and SVG cursor are original. The repository banner was
+created with the built-in OpenAI image generation tool; its prompt is saved in
+docs/assets/banner-prompt.txt. The following
 projects were examined as architecture references; their source is not vendored:
 
 | Reference | License | Design relevance |

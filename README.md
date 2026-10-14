@@ -1,4 +1,4 @@
-<p align="center"><img src="docs/assets/hero.svg" alt="SPIRIT Browser - Your browser. In motion." width="100%"></p>
+<p align="center"><img src="docs/assets/banner-v2.png" alt="SPIRIT Browser - Your browser. In motion." width="100%"></p>
 
 <p align="center">
 <a href="https://github.com/scarrymany/spirit-computer-use/actions/workflows/ci.yml"><img src="https://github.com/scarrymany/spirit-computer-use/actions/workflows/ci.yml/badge.svg" alt="Checks"></a>
