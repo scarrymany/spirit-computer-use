@@ -18,6 +18,7 @@ def test_stdio_handshake_tools_and_status():
             ) as session:
                 info = await session.initialize()
                 assert info.serverInfo.name == "SPIRIT Browser"
+                assert info.capabilities.resources.listChanged is True
                 tools = (await session.list_tools()).tools
                 assert len(tools) == 26
                 assert all(

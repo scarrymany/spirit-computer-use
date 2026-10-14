@@ -5,6 +5,8 @@ from contextlib import asynccontextmanager
 from typing import Annotated, Literal
 
 from mcp.server.fastmcp import Context, FastMCP, Image
+from mcp.server.lowlevel import NotificationOptions
+from mcp.server.stdio import stdio_server
 from mcp.types import Resource, TextContent, ToolAnnotations
 from pydantic import AnyUrl, Field
 
@@ -14,6 +16,15 @@ from .emergency import EmergencyStop
 Pixel = Annotated[float, Field(ge=0, le=100000, allow_inf_nan=False)]
 Text = Annotated[str, Field(max_length=10000)]
 KeySequence = Annotated[list[str], Field(min_length=1, max_length=32)]
+
+
+class SpiritMCP(FastMCP):
+    async def run_stdio_async(self) -> None:
+        async with stdio_server() as (reader, writer):
+            options = self._mcp_server.create_initialization_options(
+                notification_options=NotificationOptions(resources_changed=True)
+            )
+            await self._mcp_server.run(reader, writer, options)
 
 
 def create_server(*, browser_mode: str = "auto", endpoint: str | None = None) -> FastMCP:
@@ -40,7 +51,7 @@ def create_server(*, browser_mode: str = "auto", endpoint: str | None = None) ->
             await browser.close()
             emergency.close()
 
-    server = FastMCP(
+    server = SpiritMCP(
         "SPIRIT Browser",
         lifespan=lifespan,
         log_level="WARNING",
