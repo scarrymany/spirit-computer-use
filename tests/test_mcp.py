@@ -20,7 +20,14 @@ def test_stdio_handshake_tools_and_status():
                 assert info.serverInfo.name == "SPIRIT Browser"
                 assert info.capabilities.resources.listChanged is True
                 tools = (await session.list_tools()).tools
-                assert len(tools) == 27
+                assert len(tools) == 28
+                evaluation = next(t for t in tools if t.name == "browser_evaluate")
+                assert evaluation.annotations.readOnlyHint is True
+                blocked = await session.call_tool(
+                    "browser_evaluate", {"tab": "1", "script": "document.title", "read_only": False}
+                )
+                assert blocked.isError
+                assert "True" in blocked.content[0].text
                 assert all(
                     t.name not in {"list_windows", "launch_app", "get_window_state"} for t in tools
                 )

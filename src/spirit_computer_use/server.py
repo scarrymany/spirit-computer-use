@@ -337,13 +337,21 @@ def create_server(*, browser_mode: str = "auto", endpoint: str | None = None) ->
         the extension."""
         return await run("upload", tab_id=tab, snapshot_id=snapshot_id, ref=ref, paths=paths)
 
+    @server.tool(annotations=read)
+    async def browser_evaluate(tab: str, script: Text, read_only: Literal[True] = True) -> dict:
+        """Strict read-only JavaScript, never opens an approval dialog. read_only can only
+        be true. Chrome rejects possible side effects, including unknown getters/methods.
+        On rejection use browser_screenshot or get_page_text, not write-mode JavaScript.
+        For games use browser input tools; do not install engines/libraries unless requested."""
+        return await run("execute_js", tab_id=tab, script=script, read_only=True)
+
     @server.tool(annotations=write)
-    async def browser_evaluate(tab: str, script: Text, read_only: bool = True) -> dict:
-        """Read page values without a dialog. Chrome blocks possible side effects by default.
-        Prefer read_page/get_page_text for observation and press_keys for games. read_only=False
-        requires one-action approval for mutating JS. Never retry blocked reads as writes
-        automatically. Do not enter passwords."""
-        return await run("execute_js", tab_id=tab, script=script, read_only=read_only)
+    async def browser_execute_js(tab: str, script: Text) -> dict:
+        """Execute modifying JavaScript with one-action user approval. Use only for a
+        user-requested page modification that needs JS. Never use for reading page/game
+        state or as a fallback for a rejected browser_evaluate. Browser input tools handle
+        normal interactions. Password entry is manual."""
+        return await run("execute_js", tab_id=tab, script=script, read_only=False)
 
     @server.tool(annotations=read)
     async def browser_logs(tab: str, kind: Literal["console", "network"] = "console") -> dict:

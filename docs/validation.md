@@ -12,7 +12,7 @@ double/right clicks, keys, uploads with
 an approval window, downloads, PDF/PNG, console/network metadata, navigation and cleanup.
 The direct CDP test attaches to a disposable existing session and leaves it running after
 disconnect. Security tests cover Origin/token checks and local-endpoint restrictions.
-MCP tests initialize the stdio server and inspect its 27 browser/control tools.
+MCP tests initialize the stdio server and inspect its 28 browser/control tools.
 
 Set SPIRIT_HEADED_TEST=1 for visible test windows. Set SPIRIT_CURSOR_TEST=1 to assert
 unchanged OS cursor coordinates and foreground during the input sample; do not move the
