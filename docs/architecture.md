@@ -17,6 +17,13 @@ rotates its token on startup. Registered unpacked installations receive the new 
 Engine connections reject Origin headers; extension connections require the pinned ID.
 This protects against web origins, not malicious local software running as the same user.
 
+Bridge credentials and the installation registry live in `%USERPROFILE%\.spirit\browser`.
+AppData is unsuitable for shared credentials: Windows MSIX virtualization can redirect
+desktop applications and ordinary CLI processes to different files at the same visible path.
+When upgrading from 0.2.0, stop the old SPIRIT browser bridge, run `browser-setup` again
+with the existing extension directory, and restart your MCP clients. The extension reads
+the updated connection settings when it reconnects.
+
 The Python engine owns observation snapshots, navigation generations, AX refs and input
 sequencing. Coordinates and PNG dimensions use CSS pixels; devicePixelRatio is returned
 separately. OOP iframe sessions are attached through CDP and same-process frames are read

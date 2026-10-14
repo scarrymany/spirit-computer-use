@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import hmac
 import json
-import os
 import secrets
 import shutil
 import subprocess
@@ -21,7 +20,8 @@ EXTENSION_ID = "daanlgffjgmnpfkaajloicnoabmbdamb"
 
 
 def settings_path() -> Path:
-    return Path(os.environ["LOCALAPPDATA"]) / "SPIRIT" / "browser" / "bridge.json"
+    # MSIX virtualizes AppData, so desktop and CLI clients must share a profile path.
+    return Path.home() / ".spirit" / "browser" / "bridge.json"
 
 
 def bridge_settings() -> dict:

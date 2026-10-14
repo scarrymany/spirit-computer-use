@@ -71,6 +71,7 @@ def test_extension_install_registers_real_destination(tmp_path, monkeypatch):
     from spirit_computer_use import browser_bridge
 
     monkeypatch.setenv("LOCALAPPDATA", str(tmp_path / "local"))
+    monkeypatch.setenv("USERPROFILE", str(tmp_path / "user"))
     source = tmp_path / "source"
     source.mkdir()
     (source / "manifest.json").write_text('{"manifest_version":3}')
@@ -81,3 +82,15 @@ def test_extension_install_registers_real_destination(tmp_path, monkeypatch):
     assert json.loads((target / "connection.json").read_text()) == browser_bridge.bridge_settings()
     registry = browser_bridge.settings_path().parent / "extensions.json"
     assert str(target) in json.loads(registry.read_text())
+
+
+def test_clients_share_credentials_despite_appdata_virtualization(tmp_path, monkeypatch):
+    from spirit_computer_use.browser_bridge import bridge_settings, settings_path
+
+    profile = tmp_path / "user"
+    monkeypatch.setenv("USERPROFILE", str(profile))
+    monkeypatch.setenv("LOCALAPPDATA", str(tmp_path / "codex-private-appdata"))
+    codex_settings = bridge_settings()
+    monkeypatch.setenv("LOCALAPPDATA", str(tmp_path / "ordinary-appdata"))
+    assert bridge_settings() == codex_settings
+    assert settings_path() == profile / ".spirit" / "browser" / "bridge.json"
