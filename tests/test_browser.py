@@ -141,6 +141,38 @@ def test_extension_end_to_end(tmp_path, monkeypatch, site):
                     tabs = await engine.list_tabs()
                     tab = next(t["id"] for t in tabs if t["url"].rstrip("/") == site)
                     assert not next(t["active"] for t in tabs if t["id"] == tab)
+                    page_count = len(context.pages)
+                    result = await asyncio.wait_for(
+                        engine.execute_js(tab, "document.title"), timeout=3
+                    )
+                    assert result["result"] == await page.title()
+                    extraction = await engine.execute_js(
+                        tab,
+                        "(() => { const node = document.querySelector('title'); "
+                        "return {title: node.textContent, hasDocument: !!window.document}; })()",
+                    )
+                    assert extraction["result"] == {"title": result["result"], "hasDocument": True}
+                    assert len(context.pages) == page_count
+                    for script in (
+                        "document.title = 'unexpected mutation'",
+                        "fetch('/unexpected-request')",
+                        "setTimeout(() => document.title = 'later', 0)",
+                    ):
+                        with pytest.raises(RuntimeError, match="read-only"):
+                            await engine.execute_js(tab, script)
+                    assert await page.title() == result["result"]
+                    assert len(context.pages) == page_count
+                    pending = asyncio.create_task(
+                        engine.execute_js(
+                            tab, "document.title = 'approved change'", read_only=False
+                        )
+                    )
+                    prompt = await context.wait_for_event("page")
+                    await prompt.wait_for_load_state()
+                    await prompt.locator("#deny").click()
+                    with pytest.raises(RuntimeError, match="did not approve"):
+                        await pending
+                    assert await page.title() == result["result"]
                     before = await context.service_workers[0].evaluate(
                         "chrome.tabs.query({active:true}).then(t=>t.map(x=>x.id))"
                     )

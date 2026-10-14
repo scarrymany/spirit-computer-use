@@ -1,6 +1,6 @@
 {
   "name": "spirit-computer-use",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Control existing Chrome tabs through MCP with an independent browser cursor.",
   "author": {
     "name": "SPIRIT contributors"

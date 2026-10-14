@@ -65,7 +65,10 @@ UI and fail explicitly if that UI is unavailable.
 ## Security boundaries
 
 A fresh snapshot is required for input. Stop and navigation changes invalidate actions.
-Passwords require manual entry. Upload and arbitrary JS use an extension-owned approval
+Read-only JS uses Runtime.evaluate with throwOnSideEffect and does not await promises.
+Chrome rejects evaluation when side effects cannot be ruled out; SPIRIT does not retry
+with write access. Ordinary observation and game input need no JS approval.
+Passwords require manual entry. Upload and mutating JS use an extension-owned approval
 window; page scripts cannot answer it. Buttons with sensitive labels and Enter get an
 additional confirmation guard. These heuristics are not semantic enforcement: the agent
 must still obtain authorization for purchases, messages, deletion and payments, including

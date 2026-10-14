@@ -289,10 +289,12 @@ def create_server(*, browser_mode: str = "auto", endpoint: str | None = None) ->
         return await run("upload", tab_id=tab, snapshot_id=snapshot_id, ref=ref, paths=paths)
 
     @server.tool(annotations=write)
-    async def browser_evaluate(tab: str, script: Text) -> dict:
-        """Execute page JavaScript after explicit one-action approval in the extension. Do not
-        enter passwords."""
-        return await run("execute_js", tab_id=tab, script=script)
+    async def browser_evaluate(tab: str, script: Text, read_only: bool = True) -> dict:
+        """Read page values without a dialog. Chrome blocks possible side effects by default.
+        Prefer read_page/get_page_text for observation and press_keys for games. read_only=False
+        requires one-action approval for mutating JS. Never retry blocked reads as writes
+        automatically. Do not enter passwords."""
+        return await run("execute_js", tab_id=tab, script=script, read_only=read_only)
 
     @server.tool(annotations=read)
     async def browser_logs(tab: str, kind: Literal["console", "network"] = "console") -> dict:

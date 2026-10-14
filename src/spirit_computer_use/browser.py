@@ -295,19 +295,27 @@ class Browser:
         await self._visual(tab, OVERLAY)
         return tab
 
-    async def _evaluate(self, tab: Tab, expression: str, session=None):
+    async def _evaluate(self, tab: Tab, expression: str, session=None, *, read_only=False):
         result = await self.transport.cdp(
             tab.id,
             "Runtime.evaluate",
             {
                 "expression": expression,
                 "returnByValue": True,
-                "awaitPromise": True,
+                "awaitPromise": not read_only,
+                "throwOnSideEffect": read_only,
                 "timeout": 5000,
             },
             session,
         )
         if "exceptionDetails" in result:
+            if read_only:
+                raise RuntimeError(
+                    "Chrome rejected read-only JavaScript. Use browser_read_page or "
+                    "browser_get_page_text for observation and CDP input tools for actions. "
+                    "No automatic retry with write access. Details: "
+                    + str(result["exceptionDetails"])[:1500]
+                )
             raise RuntimeError(str(result["exceptionDetails"])[:2000])
         return result.get("result", {}).get("value")
 
@@ -957,13 +965,17 @@ class Browser:
             raise RuntimeError(result["errorText"])
         return {"tab": tab.id, "observe_again": True}
 
-    async def execute_js(self, tab_id: str, script: str) -> dict:
+    async def execute_js(self, tab_id: str, script: str, read_only: bool = True) -> dict:
         self._check_stop()
         tab = await self._tab(tab_id)
         tab.action_generation = tab.generation
-        await self._approve(tab, "Execute JavaScript on this page:\n" + script[:6000])
-        tab.snapshot = ""
-        return {"result": await self._evaluate(tab, script), "observe_again": True}
+        if not read_only:
+            await self._approve(tab, "Execute JavaScript on this page:\n" + script[:6000])
+            tab.snapshot = ""
+        return {
+            "result": await self._evaluate(tab, script, read_only=read_only),
+            "observe_again": not read_only,
+        }
 
     async def upload(self, tab_id, snapshot_id, ref, paths: list[str]) -> dict:
         tab = await self._begin(tab_id, snapshot_id)

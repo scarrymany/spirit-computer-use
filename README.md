@@ -50,7 +50,7 @@ connection after an upgrade. See [client setup](docs/clients.md) for paths and c
 | Visual understanding | Background PNG, accessible trees, short element refs, iframe and shadow DOM support |
 | Independent input | Animated SVG cursor, click/double/right click, drag, scroll, Unicode and shortcuts |
 | Forms | Text, select, checkbox, file upload with confirmation |
-| Debugging | Console and network metadata, explicit JavaScript with confirmation |
+| Debugging | Console/network metadata, read-only JS without prompts, confirmed mutating JS |
 | Files | PNG, PDF and tracked downloads collected into your chosen folder |
 | Games | Screenshot/action loop with arrow keys and bounded key holds |
 | Tab mentions | MCP resources, copied `@spirit-tab:ID` mentions and exported files for @ pickers |
@@ -77,7 +77,8 @@ with `--remote-debugging-port`. See [architecture and restrictions](docs/archite
 - **Stop:** Pause, Ctrl+Alt+Escape, the page's Stop button or the extension popup.
 - Password fields require manual input. The agent must ask before purchases, messages,
   deletion and payment entry. Built-in button heuristics cannot understand every website.
-- Arbitrary JS and uploads require a separate user confirmation. These are powerful tools;
+- Read-only JS uses Chrome's side-effect check without a dialog. Mutating JS and uploads
+  require a separate user confirmation. These are powerful tools;
   website content is untrusted input, not authorization.
 - Native @ autocomplete belongs to the host application. MCP resources and tab files provide
   selection where supported; SPIRIT cannot replace another application's composer.
