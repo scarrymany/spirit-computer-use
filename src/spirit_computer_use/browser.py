@@ -1094,8 +1094,11 @@ class Browser:
         if action == "new":
             if urlsplit(url).scheme not in {"http", "https"} and url != "about:blank":
                 raise ValueError("Use an HTTP(S) URL or about:blank")
-            result = await self.transport.request("open", url=url)
+            # Attach before navigation so initial loading cannot race debugger setup.
+            result = await self.transport.request("open", url="about:blank")
             tab = await self._tab(result["id"])
+            if url != "about:blank":
+                await self.navigate(tab.id, url)
             return {"tab": tab.id}
         if not tab_id:
             raise ValueError("Select a tab id")

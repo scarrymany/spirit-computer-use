@@ -404,7 +404,8 @@ def test_direct_cdp_existing_session(tmp_path, site):
             port, path = port_file.read_text().splitlines()[:2]
             await engine.connect("cdp", f"ws://127.0.0.1:{port}{path}")
             tab = (await engine.tab_action("new", url=site))["tab"]
-            await engine.wait_for(tab, text="SPIRIT browser verification")
+            ready = await engine.wait_for(tab, text="SPIRIT browser verification")
+            assert ready["ready"], await engine.get_page_text(tab)
             state = await engine.read_page(tab)
             await engine.click(tab, state["snapshot_id"], ref=ref(state, "Play", "button"))
             assert "Played" in (await engine.get_page_text(tab))["text"]
